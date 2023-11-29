@@ -1,18 +1,16 @@
 CC = g++
-
 CFLAGS = -g -std=c++17
 
-INCLUDE = ./include
+TARGET = humanGL
 
+INCLUDE = ./include
 INCLUDES = humanGL Camera GL_Prog include/utils include/iterators include/ft_mat include/ft_vec
 INCLUDES_EXT = .hpp
 INCLUDES := $(addsuffix $(INCLUDES_EXT), $(INCLUDES))
 
-TARGET = humanGL
-
 IMGUI_SRC = ./include/imgui.cpp ./include/imgui_draw.cpp ./include/imgui_impl_glfw.cpp ./include/imgui_impl_opengl3.cpp ./include/imgui_widgets.cpp ./include/imgui_tables.cpp
-
-SRC = main.cpp $(IMGUI_SRC) 
+SRCS = main.cpp $(IMGUI_SRC)
+OBJS = $(SRCS:.cpp=.o)
 
 LIBS = -lglfw -lGLEW -lGL -ldl
 
@@ -20,18 +18,21 @@ LIBS_MAC = -lglfw -lGLEW -framework OpenGL
 
 all: $(TARGET)
 
-$(TARGET): $(SRC) $(INCLUDES) Makefile
-	$(CC) -I$(INCLUDE) $(CFLAGS) -o $(TARGET) $(SRC) $(LIBS)
+%.o: %.cpp $(INCLUDES) Makefile
+	$(CC) -I$(INCLUDE) $(CFLAGS) -c $< -o $@ $(LIBS)
 
-linux: $(SRC) $(INCLUDES) Makefile
-	$(CC) -I$(INCLUDE) $(CFLAGS) -o $(TARGET) $(SRC) $(LIBS)
+$(TARGET): $(OBJS)
+	$(CC) -I$(INCLUDE) $(CFLAGS) -o $(TARGET) $(OBJS) $(LIBS)
 
-mac: $(SRC) $(INCLUDES) Makefile
-	$(CC) -I$(INCLUDE) $(CFLAGS) -o $(TARGET) $(SRC) $(LIBS_MAC)
+mac: $(OBJS) $(INCLUDES) Makefile
+	$(CC) -I$(INCLUDE) $(CFLAGS) -o $(TARGET) $(SRCS) $(LIBS_MAC)
 
 clean:
 	rm $(TARGET)
 
+fclean: clean
+	rm $(OBJS)
+
 re: clean all
 
-.PHONY: all clean re
+.PHONY: all clean fclean re
