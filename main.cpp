@@ -6,14 +6,17 @@
 #include "imgui_impl_opengl3.h"
 #include <map>
 
+using namespace std::chrono::_V2;
+
 uint wWidth = 1000;
 uint wHeight = 1000;
 bool keys[GLFW_KEY_LAST] = {false};
 vec backGroundColor = {0.4f, 0.4f, 0.5f, 1.0f};
 
+std::map<string, animation> animations;
 animation *current_animation;
-auto start_time = std::chrono::high_resolution_clock::time_point();
-auto end_time = std::chrono::high_resolution_clock::time_point();
+system_clock::time_point start_time = std::chrono::high_resolution_clock::time_point();
+system_clock::time_point end_time = start_time;
 
 Bone *root;
 
@@ -30,123 +33,6 @@ static void key_callback(GLFWwindow *window, int key, int scancode, int action, 
 
 static void mouse_callback(GLFWwindow *window, double xpos, double ypos)
 {
-}
-
-std::map<string, animation> animations;
-
-void animationEditor(Bone *root)
-{
-    ImGui::Begin("Animation Editor");
-    static string current_animation_name = "";
-    static char new_animation_name[100] = "";
-    static char load_animation_name[100] = "";
-    static float time = 0.0f;
-
-    if (ImGui::BeginCombo("Animations", current_animation_name.c_str()))
-    {
-        for (auto &anim : animations)
-        {
-            bool is_selected = (current_animation_name == anim.first);
-
-            if (ImGui::Selectable(anim.first.c_str(), is_selected))
-            {
-                current_animation_name = anim.first;
-                animation animation = animations[current_animation_name];
-
-                if (animation.size() > 0)
-                    time = animation.rbegin()->first;
-                else
-                    time = 0.0f;
-            }
-
-            if (is_selected)
-                ImGui::SetItemDefaultFocus();
-        }
-
-        ImGui::EndCombo();
-    }
-
-    if (current_animation_name != "")
-    {
-        if (animations[current_animation_name].size() > 0)
-            ImGui::SliderFloat("Time", &time, animations[current_animation_name].rbegin()->first, 10.0f);
-
-        if (ImGui::Button("Save Keyframe"))
-        {
-            animations[current_animation_name].insert(std::make_pair(time, root->getTransforms()));
-            std::cout << "Saved keyframe for time " << time << std::endl;
-        }
-
-        if (animations[current_animation_name].size() > 0 && ImGui::Button("Delete Last Keyframe"))
-        {
-            std::cout << "Deleted keyframe for time " << animations[current_animation_name].rbegin()->first << std::endl;
-            animations[current_animation_name].erase(animations[current_animation_name].rbegin()->first);
-        }
-
-        if (ImGui::Button("Delete Animation"))
-        {
-            animations.erase(current_animation_name);
-            current_animation_name = "";
-        }
-
-        if (animations[current_animation_name].size() > 1 && ImGui::Button("Save to file"))
-            saveAnimation(current_animation_name, animations[current_animation_name]);
-    }
-
-    ImGui::Separator();
-
-    ImGui::InputText("New", new_animation_name, 100);
-
-    if (new_animation_name[0] != '\0')
-    {
-        if (ImGui::Button("Create Animation"))
-        {
-            animations[new_animation_name] = animation();
-
-            if (current_animation_name != "")
-            {
-                if (animations[current_animation_name].size() > 0)
-                    time = animations[current_animation_name].rbegin()->first;
-                else
-                    time = 0.0f;
-            }
-
-            std::cout << "Created new animation " << new_animation_name << std::endl;
-            new_animation_name[0] = '\0';
-        }
-    }
-
-    ImGui::InputText("Load", load_animation_name, 100);
-
-    if (load_animation_name[0] != '\0')
-    {
-        if (ImGui::Button("Load Animation"))
-        {
-            animation animation = loadAnimation(load_animation_name);
-            auto path = std::filesystem::path(load_animation_name);
-            string name = path.stem();
-
-            if (animation.size() > 0)
-                animations[name] = animation;
-            load_animation_name[0] = '\0';
-        }
-    }
-
-    ImGui::Separator();
-
-    ImGui::Text("Play Animation");
-    for (auto &anim : animations)
-    {
-        if (anim.second.size() > 1 && ImGui::Button(anim.first.c_str()))
-        {
-            current_animation = &anim.second;
-            start_time = std::chrono::high_resolution_clock::now();
-            end_time = start_time + std::chrono::milliseconds((int)(anim.second.rbegin()->first * 1000));
-            std::cout << "Playing animation " << anim.first << std::endl;
-        }
-    }
-
-    ImGui::End();
 }
 
 void boneEditor(Bone *bone)
@@ -193,7 +79,7 @@ int main()
     auto window = prog.getWindow();
     auto shaderProgram = prog.getShaderProgram();
 
-    animations = loadAnimations("anim");
+    animations = loadAnimationsFromDir("anim");
 
     root = createHumanModel();
 

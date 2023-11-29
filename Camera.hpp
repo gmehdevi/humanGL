@@ -2,8 +2,6 @@
 #define CAMERA_HPP
 #include <GLFW/glfw3.h>
 #include <vector>
-#include "ft_vec.hpp"
-#include "ft_mat.hpp"
 
 using namespace ft;
 typedef vector<float> vec;

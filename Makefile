@@ -9,7 +9,7 @@ INCLUDES_EXT = .hpp
 INCLUDES := $(addsuffix $(INCLUDES_EXT), $(INCLUDES))
 
 IMGUI_SRC = ./include/imgui.cpp ./include/imgui_draw.cpp ./include/imgui_impl_glfw.cpp ./include/imgui_impl_opengl3.cpp ./include/imgui_widgets.cpp ./include/imgui_tables.cpp
-SRCS = main.cpp $(IMGUI_SRC)
+SRCS = main.cpp animation.cpp Bone.cpp $(IMGUI_SRC)
 OBJS = $(SRCS:.cpp=.o)
 
 LIBS = -lglfw -lGLEW -lGL -ldl

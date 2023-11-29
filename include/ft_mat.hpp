@@ -782,7 +782,7 @@ namespace ft
         }
     };
 
-    matrix<float> eulerToRotation(float roll, float pitch, float yaw, uint n)
+    inline matrix<float> eulerToRotation(float roll, float pitch, float yaw, uint n)
     {
         if (n != 3 && n != 4)
             throw std::invalid_argument("Rotation matrix must be 3x3 or 4x4");
@@ -806,14 +806,14 @@ namespace ft
         return ret;
     }
 
-    matrix<float> eulerToRotation(const vector<float> &angles, uint n)
+    inline matrix<float> eulerToRotation(const vector<float> &angles, uint n)
     {
         if (angles.size() != 3)
             throw std::invalid_argument("Euler angles must be a vector of size 3");
         return eulerToRotation(angles[0], angles[1], angles[2], n);
     }
 
-    vector<float> rotationToEuler(const matrix<float> &rotation)
+    inline vector<float> rotationToEuler(const matrix<float> &rotation)
     {
         float yaw = atan2f(rotation[1][0], rotation[0][0]);
         float pitch = atan2f(-rotation[2][0], sqrtf(rotation[2][1] * rotation[2][1] + rotation[2][2] * rotation[2][2]));
@@ -821,7 +821,7 @@ namespace ft
         return vector<float>({roll, pitch, yaw});
     }
 
-    matrix<float> rotate(matrix<float> m, float theta, vector<float> axis)
+    inline matrix<float> rotate(matrix<float> m, float theta, vector<float> axis)
     {
         theta = -theta;
         axis = axis / norm(axis);
@@ -832,7 +832,7 @@ namespace ft
                m;
     }
 
-    matrix<float> rotate(float theta, vector<float> axis)
+    inline matrix<float> rotate(float theta, vector<float> axis)
     {
         theta = -theta;
         axis = axis / norm(axis);
@@ -842,7 +842,7 @@ namespace ft
                               {0, 0, 0, 1}});
     }
 
-    matrix<float> perspective(float fov, float ratio, float near, float far)
+    inline matrix<float> perspective(float fov, float ratio, float near, float far)
     {
         float f = 1 / tanf(fov / 2);
         return matrix<float>({{f / ratio, 0, 0, 0},
@@ -851,7 +851,7 @@ namespace ft
                               {0, 0, 2 * far * near / (near - far), 0}});
     }
 
-    matrix<float> translate(vector<float> v)
+    inline matrix<float> translate(vector<float> v)
     {
         return matrix<float>({{1, 0, 0, 0},
                               {0, 1, 0, 0},
@@ -859,7 +859,7 @@ namespace ft
                               {v[0], v[1], v[2], 1}});
     }
 
-    matrix<float> scale(vector<float> v)
+    inline matrix<float> scale(vector<float> v)
     {
         return matrix<float>({{v[0], 0, 0, 0},
                               {0, v[1], 0, 0},
@@ -867,7 +867,7 @@ namespace ft
                               {0, 0, 0, 1}});
     }
 
-    matrix<float> scale(float s)
+    inline matrix<float> scale(float s)
     {
         return matrix<float>({{s, 0, 0, 0},
                               {0, s, 0, 0},
@@ -875,7 +875,7 @@ namespace ft
                               {0, 0, 0, 1}});
     }
 
-    matrix<float> camera(vector<float> const &eye, vector<float> const &center, vector<float> const &up)
+    inline matrix<float> camera(vector<float> const &eye, vector<float> const &center, vector<float> const &up)
     {
         vector<float> f = normalize(center - eye);
         vector<float> u = normalize(up);
