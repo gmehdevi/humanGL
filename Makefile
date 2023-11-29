@@ -24,7 +24,7 @@ all: $(TARGET)
 $(TARGET): $(OBJS)
 	$(CC) -I$(INCLUDE) $(CFLAGS) -o $(TARGET) $(OBJS) $(LIBS)
 
-mac: $(OBJS) $(INCLUDES) Makefile
+mac: $(SRCS) $(INCLUDES) Makefile
 	$(CC) -I$(INCLUDE) $(CFLAGS) -o $(TARGET) $(SRCS) $(LIBS_MAC)
 
 clean:
