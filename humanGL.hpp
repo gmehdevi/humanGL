@@ -270,11 +270,13 @@ Bone *createHumanModel()
 void saveAnimation(const string name, const animation &a)
 {
     std::ofstream file(name + ".anim");
+
     if (!file.is_open())
     {
-        std::cerr << "Animation " << name << " not found" << std::endl;
+        std::cerr << "Could not open file " << name << std::endl;
         return;
     }
+
     for (const auto &[time, transforms] : a)
     {
         file << time << "\n";
@@ -282,7 +284,10 @@ void saveAnimation(const string name, const animation &a)
             file << m << "\n/";
         file << "~";
     }
+
     file.close();
+
+    std::cout << "Animation " << name << " saved" << std::endl;
 }
 
 std::vector<string> split_set(string s, string delimiter)
@@ -343,10 +348,10 @@ std::map<string, animation> loadAnimations(string dir_path)
         if (entry.path().extension() != ".anim")
             throw std::runtime_error("Invalid file type");
 
-        string path = entry.path();
-        string name = path.substr(path.find_last_of("/") + 1, path.find_last_of(".") - path.find_last_of("/") - 1);
+        auto path = entry.path();
+        string name = path.stem();
         std::cout << "Loading animation " << name << std::endl;
-        path = path.substr(0, path.find_last_of("."));
+        path = path.replace_extension("");
         animations[name] = loadAnimation(path);
     }
 

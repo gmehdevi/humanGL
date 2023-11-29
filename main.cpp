@@ -47,34 +47,51 @@ void animationEditor(Bone *root)
         for (auto &anim : animations)
         {
             bool is_selected = (current_animation_name == anim.first);
+
             if (ImGui::Selectable(anim.first.c_str(), is_selected))
-                current_animation_name = anim.first;
-            if (is_selected)
             {
-                ImGui::SetItemDefaultFocus();
-                time = animations[current_animation_name].rbegin()->first;
+                current_animation_name = anim.first;
+                animation animation = animations[current_animation_name];
+
+                if (animation.size() > 0)
+                    time = animation.rbegin()->first;
+                else
+                    time = 0.0f;
             }
+
+            if (is_selected)
+                ImGui::SetItemDefaultFocus();
         }
+
         ImGui::EndCombo();
     }
 
-    if (current_animation_name != "" && animations[current_animation_name].size() > 0)
-        ImGui::SliderFloat("Time", &time, animations[current_animation_name].rbegin()->first, 10.0f);
-
-    if (current_animation_name != "" && ImGui::Button("Save Keyframe"))
-        animations[current_animation_name].insert(std::make_pair(time, root->getTransforms()));
-
-    if (current_animation_name != "" && animations[current_animation_name].size() > 0 && ImGui::Button("Delete Keyframe"))
-        animations[current_animation_name].erase(animations[current_animation_name].rbegin()->first);
-
-    if (current_animation_name != "" && ImGui::Button("Delete Animation"))
+    if (current_animation_name != "")
     {
-        animations.erase(current_animation_name);
-        current_animation_name = "";
-    }
+        if (animations[current_animation_name].size() > 0)
+            ImGui::SliderFloat("Time", &time, animations[current_animation_name].rbegin()->first, 10.0f);
 
-    if (current_animation_name != "" && animations[current_animation_name].size() > 1 && ImGui::Button("Save to file"))
-        saveAnimation(current_animation_name, animations[current_animation_name]);
+        if (ImGui::Button("Save Keyframe"))
+        {
+            animations[current_animation_name].insert(std::make_pair(time, root->getTransforms()));
+            std::cout << "Saved keyframe for time " << time << std::endl;
+        }
+
+        if (animations[current_animation_name].size() > 0 && ImGui::Button("Delete Last Keyframe"))
+        {
+            std::cout << "Deleted keyframe for time " << animations[current_animation_name].rbegin()->first << std::endl;
+            animations[current_animation_name].erase(animations[current_animation_name].rbegin()->first);
+        }
+
+        if (ImGui::Button("Delete Animation"))
+        {
+            animations.erase(current_animation_name);
+            current_animation_name = "";
+        }
+
+        if (animations[current_animation_name].size() > 1 && ImGui::Button("Save to file"))
+            saveAnimation(current_animation_name, animations[current_animation_name]);
+    }
 
     ImGui::Separator();
 
@@ -85,6 +102,15 @@ void animationEditor(Bone *root)
         if (ImGui::Button("Create Animation"))
         {
             animations[new_animation_name] = animation();
+
+            if (current_animation_name != "")
+            {
+                if (animations[current_animation_name].size() > 0)
+                    time = animations[current_animation_name].rbegin()->first;
+                else
+                    time = 0.0f;
+            }
+
             std::cout << "Created new animation " << new_animation_name << std::endl;
             new_animation_name[0] = '\0';
         }
@@ -96,12 +122,12 @@ void animationEditor(Bone *root)
     {
         if (ImGui::Button("Load Animation"))
         {
-            animation a = loadAnimation(load_animation_name);
-            string load_animation_name_string(load_animation_name);
-            string animation_name = load_animation_name_string.substr(load_animation_name_string.find_last_of("/") + 1, load_animation_name_string.find_last_of(".") - load_animation_name_string.find_last_of("/") - 1);
+            animation animation = loadAnimation(load_animation_name);
+            auto path = std::filesystem::path(load_animation_name);
+            string name = path.stem();
 
-            if (a.size() > 0)
-                animations[animation_name] = a;
+            if (animation.size() > 0)
+                animations[name] = animation;
             load_animation_name[0] = '\0';
         }
     }
@@ -116,7 +142,7 @@ void animationEditor(Bone *root)
             current_animation = &anim.second;
             start_time = std::chrono::high_resolution_clock::now();
             end_time = start_time + std::chrono::milliseconds((int)(anim.second.rbegin()->first * 1000));
-            std::cout << "Animation selected" << std::endl;
+            std::cout << "Playing animation " << anim.first << std::endl;
         }
     }
 
