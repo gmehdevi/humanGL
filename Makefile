@@ -33,6 +33,6 @@ clean:
 fclean: clean
 	rm $(OBJS)
 
-re: clean all
+re: fclean all
 
 .PHONY: all clean fclean re
