@@ -11,9 +11,9 @@ uint wHeight = 1000;
 bool keys[GLFW_KEY_LAST] = {false};
 vec backGroundColor = {0.4f, 0.4f, 0.5f, 1.0f};
 
-animation *currentAnimation;
-auto startTime = std::chrono::high_resolution_clock::time_point();
-auto endTime = std::chrono::high_resolution_clock::time_point();
+animation *current_animation;
+auto start_time = std::chrono::high_resolution_clock::time_point();
+auto end_time = std::chrono::high_resolution_clock::time_point();
 
 Bone *root;
 
@@ -33,74 +33,76 @@ static void mouse_callback(GLFWwindow *window, double xpos, double ypos)
 }
 
 std::map<string, animation> animations;
+
 void animationEditor(Bone *root)
 {
     ImGui::Begin("Animation Editor");
-    static string currAnimationName = "";
-    static char newAnimationName[100] = "";
-    static char loadAnimationName[100] = "";
-    static float getT = 0.0f;
+    static string current_animation_name = "";
+    static char new_animation_name[100] = "";
+    static char load_animation_name[100] = "";
+    static float time = 0.0f;
 
-    if (ImGui::BeginCombo("Animations", currAnimationName.c_str()))
+    if (ImGui::BeginCombo("Animations", current_animation_name.c_str()))
     {
         for (auto &anim : animations)
         {
-            bool is_selected = (currAnimationName == anim.first);
+            bool is_selected = (current_animation_name == anim.first);
             if (ImGui::Selectable(anim.first.c_str(), is_selected))
-                currAnimationName = anim.first;
+                current_animation_name = anim.first;
             if (is_selected)
             {
                 ImGui::SetItemDefaultFocus();
-                getT = animations[currAnimationName].rbegin()->first;
+                time = animations[current_animation_name].rbegin()->first;
             }
         }
         ImGui::EndCombo();
     }
 
-    if (currAnimationName != "" && animations[currAnimationName].size() > 0)
-        ImGui::SliderFloat("Time", &getT, animations[currAnimationName].rbegin()->first, 10.0f);
+    if (current_animation_name != "" && animations[current_animation_name].size() > 0)
+        ImGui::SliderFloat("Time", &time, animations[current_animation_name].rbegin()->first, 10.0f);
 
-    if (currAnimationName != "" && ImGui::Button("Save Keyframe"))
-        animations[currAnimationName].insert(std::make_pair(getT, root->getTransforms()));
+    if (current_animation_name != "" && ImGui::Button("Save Keyframe"))
+        animations[current_animation_name].insert(std::make_pair(time, root->getTransforms()));
 
-    if (currAnimationName != "" && animations[currAnimationName].size() > 0 && ImGui::Button("Delete Keyframe"))
-        animations[currAnimationName].erase(animations[currAnimationName].rbegin()->first);
+    if (current_animation_name != "" && animations[current_animation_name].size() > 0 && ImGui::Button("Delete Keyframe"))
+        animations[current_animation_name].erase(animations[current_animation_name].rbegin()->first);
 
-    if (currAnimationName != "" && ImGui::Button("Delete Animation"))
+    if (current_animation_name != "" && ImGui::Button("Delete Animation"))
     {
-        animations.erase(currAnimationName);
-        currAnimationName = "";
+        animations.erase(current_animation_name);
+        current_animation_name = "";
     }
 
-    if (currAnimationName != "" && animations[currAnimationName].size() > 1 && ImGui::Button("Save to file"))
-        saveAnimation(currAnimationName, animations[currAnimationName]);
+    if (current_animation_name != "" && animations[current_animation_name].size() > 1 && ImGui::Button("Save to file"))
+        saveAnimation(current_animation_name, animations[current_animation_name]);
 
     ImGui::Separator();
 
-    ImGui::InputText("New", newAnimationName, 100);
+    ImGui::InputText("New", new_animation_name, 100);
 
-    if (newAnimationName[0] != '\0')
+    if (new_animation_name[0] != '\0')
     {
         if (ImGui::Button("Create Animation"))
         {
-            animations[newAnimationName] = animation();
-            newAnimationName[0] = '\0';
-            std::cout << "Created new animation " << newAnimationName << std::endl;
+            animations[new_animation_name] = animation();
+            std::cout << "Created new animation " << new_animation_name << std::endl;
+            new_animation_name[0] = '\0';
         }
     }
 
-    ImGui::InputText("Load", loadAnimationName, 100);
+    ImGui::InputText("Load", load_animation_name, 100);
 
-    if (loadAnimationName[0] != '\0')
+    if (load_animation_name[0] != '\0')
     {
         if (ImGui::Button("Load Animation"))
         {
-            animation a = loadAnimation(loadAnimationName);
+            animation a = loadAnimation(load_animation_name);
+            string load_animation_name_string(load_animation_name);
+            string animation_name = load_animation_name_string.substr(load_animation_name_string.find_last_of("/") + 1, load_animation_name_string.find_last_of(".") - load_animation_name_string.find_last_of("/") - 1);
+
             if (a.size() > 0)
-                animations[loadAnimationName] = a;
-            else
-                std::cerr << "Animation " << loadAnimationName << " not found" << std::endl;
-            loadAnimationName[0] = '\0';
+                animations[animation_name] = a;
+            load_animation_name[0] = '\0';
         }
     }
 
@@ -111,10 +113,10 @@ void animationEditor(Bone *root)
     {
         if (anim.second.size() > 1 && ImGui::Button(anim.first.c_str()))
         {
-            currentAnimation = &anim.second;
-            startTime = std::chrono::high_resolution_clock::now();
-            endTime = startTime + std::chrono::milliseconds((int)(anim.second.rbegin()->first * 1000));
-            std::cout << "animation selected" << std::endl;
+            current_animation = &anim.second;
+            start_time = std::chrono::high_resolution_clock::now();
+            end_time = start_time + std::chrono::milliseconds((int)(anim.second.rbegin()->first * 1000));
+            std::cout << "Animation selected" << std::endl;
         }
     }
 
@@ -200,13 +202,13 @@ int main()
 
         glUniform3f(glGetUniformLocation(shaderProgram, "Color"), 1.0f, 0.0f, 0.0f);
 
-        if (currentAnimation != nullptr && std::chrono::high_resolution_clock::now() > endTime)
-            currentAnimation = nullptr;
+        if (current_animation != nullptr && std::chrono::high_resolution_clock::now() > end_time)
+            current_animation = nullptr;
 
-        if (currentAnimation == nullptr)
+        if (current_animation == nullptr)
             root->resetTransforms(mat(4));
         else
-            runAnimation(root, *currentAnimation, startTime);
+            runAnimation(root, *current_animation, start_time);
 
         root->renderModel(shaderProgram);
 
