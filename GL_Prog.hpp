@@ -6,15 +6,18 @@
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 
-class GL_Prog {
+class GL_Prog
+{
 public:
-    GL_Prog(const std::string& vertexShaderPath, const std::string& fragmentShaderPath,
+    GL_Prog(const std::string &vertexShaderPath, const std::string &fragmentShaderPath,
             GLFWkeyfun keyCallback, GLFWcursorposfun mouseCallback,
             int width, int height, std::string title = "OpenGL program")
         : window(nullptr), shader_program(0), key_callback(keyCallback), mouse_callback(mouseCallback),
-          screenWidth(width), screenHeight(height) {
+          screenWidth(width), screenHeight(height)
+    {
 
-        if (!glfwInit()) {
+        if (!glfwInit())
+        {
             std::cerr << "Failed to initialize GLFW." << std::endl;
             exit(-1);
         }
@@ -27,24 +30,29 @@ public:
         screenHeight = height <= 0 || height > glfwGetVideoMode(glfwGetPrimaryMonitor())->height ? glfwGetVideoMode(glfwGetPrimaryMonitor())->height : height;
 
         window = glfwCreateWindow(screenWidth, screenHeight, title.data(), nullptr, nullptr);
-        if (!window) {
+        if (!window)
+        {
             std::cerr << "Failed to create GLFW window." << std::endl;
             glfwTerminate();
             exit(-1);
         }
 
-        if (screenWidth <= 0 || screenHeight <= 0) {
-            GLFWmonitor* monitor = glfwGetPrimaryMonitor();
-            const GLFWvidmode* mode = glfwGetVideoMode(monitor);
+        if (screenWidth <= 0 || screenHeight <= 0)
+        {
+            GLFWmonitor *monitor = glfwGetPrimaryMonitor();
+            const GLFWvidmode *mode = glfwGetVideoMode(monitor);
             glfwSetWindowMonitor(window, monitor, 0, 0, mode->width, mode->height, mode->refreshRate);
-        } else {
+        }
+        else
+        {
             glfwSetWindowMonitor(window, nullptr, 0, 0, screenWidth, screenHeight, GLFW_DONT_CARE);
         }
 
         glfwMakeContextCurrent(window);
         glfwSwapInterval(1);
 
-        if (glewInit() != GLEW_OK) {
+        if (glewInit() != GLEW_OK)
+        {
             std::cerr << "Failed to initialize GLEW." << std::endl;
             exit(-1);
         }
@@ -55,36 +63,41 @@ public:
         loadShaders(vertexShaderPath, fragmentShaderPath);
     }
 
-    ~GL_Prog() {
+    ~GL_Prog()
+    {
         glDeleteProgram(shader_program);
         glfwTerminate();
     }
 
-    void changeShaders(const std::string& vertexShaderPath, const std::string& fragmentShaderPath) {
+    void changeShaders(const std::string &vertexShaderPath, const std::string &fragmentShaderPath)
+    {
         glDeleteProgram(shader_program);
         loadShaders(vertexShaderPath, fragmentShaderPath);
     }
 
-    GLFWwindow* getWindow() const {
+    GLFWwindow *getWindow() const
+    {
         return window;
     }
 
-    GLuint getShaderProgram() const {
+    GLuint getShaderProgram() const
+    {
         return shader_program;
     }
 
-    int getWidth() const {
+    int getWidth() const
+    {
         int width, height;
         glfwGetFramebufferSize(window, &width, &height);
         return width;
     }
 
-    int getHeight() const {
+    int getHeight() const
+    {
         int width, height;
         glfwGetFramebufferSize(window, &width, &height);
         return height;
     }
-
 
 private:
     GLFWwindow *window;
@@ -94,11 +107,13 @@ private:
     int screenWidth;
     int screenHeight;
 
-    static void error_callback(int error, const char *description) {
+    static void error_callback(int error, const char *description)
+    {
         std::cerr << "Error: " << description << std::endl;
     }
 
-    void loadShaders(const std::string& vertexShaderPath, const std::string& fragmentShaderPath) {
+    void loadShaders(const std::string &vertexShaderPath, const std::string &fragmentShaderPath)
+    {
         std::string vertexShaderSource = loadShaderSource(vertexShaderPath);
         std::string fragmentShaderSource = loadShaderSource(fragmentShaderPath);
 
@@ -115,9 +130,11 @@ private:
         glDeleteShader(fragment_shader);
     }
 
-    std::string loadShaderSource(const std::string& filePath) {
+    std::string loadShaderSource(const std::string &filePath)
+    {
         std::ifstream file(filePath);
-        if (!file) {
+        if (!file)
+        {
             std::cerr << "Failed to open shader file: " << filePath << std::endl;
             exit(-1);
         }
@@ -127,16 +144,18 @@ private:
         return stream.str();
     }
 
-    GLuint createShader(GLenum shaderType, const std::string& shaderSource) {
+    GLuint createShader(GLenum shaderType, const std::string &shaderSource)
+    {
         GLuint shader = glCreateShader(shaderType);
-        const char* shaderSourcePtr = shaderSource.c_str();
+        const char *shaderSourcePtr = shaderSource.c_str();
         glShaderSource(shader, 1, &shaderSourcePtr, nullptr);
         glCompileShader(shader);
         checkShaderError(shader, GL_COMPILE_STATUS, false, "Error: Failed to compile shader.");
         return shader;
     }
 
-    void checkShaderError(GLuint shader, GLuint flag, bool isProgram, const std::string& errorMessage) {
+    void checkShaderError(GLuint shader, GLuint flag, bool isProgram, const std::string &errorMessage)
+    {
         GLint success = 0;
         GLchar errorLog[1024] = {0};
 
@@ -145,7 +164,8 @@ private:
         else
             glGetShaderiv(shader, flag, &success);
 
-        if (success == GL_FALSE) {
+        if (success == GL_FALSE)
+        {
             if (isProgram)
                 glGetProgramInfoLog(shader, sizeof(errorLog), nullptr, errorLog);
             else
@@ -155,5 +175,4 @@ private:
             exit(-1);
         }
     }
-
 };

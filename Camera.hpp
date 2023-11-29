@@ -9,8 +9,8 @@ using namespace ft;
 typedef vector<float> vec;
 typedef matrix<float> mat;
 
-
-class Camera {
+class Camera
+{
 public:
     vector<vec> init;
     vec eye;
@@ -18,29 +18,33 @@ public:
     vec up;
     float cameraRSpeed;
     float cameraTSpeed;
-    bool* keys;
+    bool *keys;
     double lastMouseX;
     double lastMouseY;
     bool firstMouse;
 
-    Camera(vec eyePos, vec centerPos, vec upVec, float rotateSpeed, float translateSpeed, bool* keyStates)
-        : eye(eyePos), center(centerPos), up(upVec), cameraRSpeed(rotateSpeed), cameraTSpeed(translateSpeed), keys(keyStates),lastMouseX(0.0), lastMouseY(0.0), firstMouse(true) {
+    Camera(vec eyePos, vec centerPos, vec upVec, float rotateSpeed, float translateSpeed, bool *keyStates)
+        : eye(eyePos), center(centerPos), up(upVec), cameraRSpeed(rotateSpeed), cameraTSpeed(translateSpeed), keys(keyStates), lastMouseX(0.0), lastMouseY(0.0), firstMouse(true)
+    {
         init.push_back(eyePos);
         init.push_back(centerPos);
         init.push_back(upVec);
     }
 
-    void reset() {
+    void reset()
+    {
         eye = init[0];
         center = init[1];
         up = init[2];
     }
-    
-    void rotateCamera(GLFWwindow* window) {
+
+    void rotateCamera(GLFWwindow *window)
+    {
         double mouseX, mouseY;
         glfwGetCursorPos(window, &mouseX, &mouseY);
 
-        if (firstMouse) {
+        if (firstMouse)
+        {
             lastMouseX = mouseX;
             lastMouseY = mouseY;
             firstMouse = false;
@@ -55,7 +59,7 @@ public:
         xOffset *= cameraRSpeed;
         yOffset *= cameraRSpeed;
 
-        float maxPitch = 89.0f * (M_PI / 180.0f); // Converting degrees to radians
+        float maxPitch = 89.0f * (M_PI / 180.0f);  // Converting degrees to radians
         float minPitch = -89.0f * (M_PI / 180.0f); // Converting degrees to radians
 
         vec forward = (center - eye).normalize();
@@ -74,10 +78,13 @@ public:
         forward = {tmp_forward[0], tmp_forward[1], tmp_forward[2]};
         // Preventing flipping by constraining pitch
         float pitch = asin(-forward[1]);
-        if (pitch > maxPitch) {
+        if (pitch > maxPitch)
+        {
             forward[1] = -sin(maxPitch);
             forward = forward.normalize();
-        } else if (pitch < minPitch) {
+        }
+        else if (pitch < minPitch)
+        {
             forward[1] = -sin(minPitch);
             forward = forward.normalize();
         }
@@ -92,25 +99,27 @@ public:
         vec right = (cross(forward, up)).normalize();
         vec rotation(3);
 
-        rotation += (keys[GLFW_KEY_UP] ? right :   vec(3));
+        rotation += (keys[GLFW_KEY_UP] ? right : vec(3));
         rotation -= (keys[GLFW_KEY_DOWN] ? right : vec(3));
-        rotation += (keys[GLFW_KEY_LEFT] ? up :    vec(3));
-        rotation -= (keys[GLFW_KEY_RIGHT] ? up :   vec(3));
+        rotation += (keys[GLFW_KEY_LEFT] ? up : vec(3));
+        rotation -= (keys[GLFW_KEY_RIGHT] ? up : vec(3));
 
         if (rotation == vec(3))
             return;
 
         mat rotationMatrix = rotate(cameraRSpeed, rotation);
-        vec forward4 = forward; forward4.push_back(1.0f);
+        vec forward4 = forward;
+        forward4.push_back(1.0f);
 
-        vec newDirection = rotationMatrix * forward4; newDirection.pop_back();
+        vec newDirection = rotationMatrix * forward4;
+        newDirection.pop_back();
 
         center = eye + newDirection;
         up = (cross(right, newDirection)).normalize();
     }
 
-
-    void translateCamera() {
+    void translateCamera()
+    {
         vec forward = (center - eye).normalize();
         vec right = cross(forward, up).normalize();
 
@@ -128,7 +137,8 @@ public:
         center += translation;
     }
 
-    void update(GLFWwindow* window) {
+    void update(GLFWwindow *window)
+    {
         // rotateCamera(window);
         rotateCameraArrows();
         translateCamera();
@@ -136,7 +146,8 @@ public:
             reset();
     }
 
-    mat getViewMatrix() const {
+    mat getViewMatrix() const
+    {
         return camera(eye, center, up);
     }
 };
