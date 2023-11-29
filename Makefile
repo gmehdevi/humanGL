@@ -28,10 +28,10 @@ mac: $(SRCS) $(INCLUDES) Makefile
 	$(CC) -I$(INCLUDE) $(CFLAGS) -o $(TARGET) $(SRCS) $(LIBS_MAC)
 
 clean:
-	rm $(TARGET)
+	rm -f $(TARGET)
 
 fclean: clean
-	rm $(OBJS)
+	rm -f $(OBJS)
 
 re: fclean all
 
