@@ -1,0 +1,34 @@
+#ifndef SETTINGS_HPP
+#define SETTINGS_HPP
+
+#define CAMERA_EYE_POSITION {0.0f, 0.0f, 10.0f}
+#define CAMERA_CENTER_POSITION {0.0f, 0.0f, 0.0f}
+#define CAMERA_UP_VECTOR {0.0f, 1.0f, 0.0f}
+#define CAMERA_ROTATE_SPEED 0.01f
+#define CAMERA_TRANSLATE_SPEED 0.1f
+
+#define DEFAULT_ANIMATIONS_DIRECTORY "anim"
+
+#define WINDOW_WIDTH 1000
+#define WINDOW_HEIGHT 1000
+
+#define BACKGROUND_COLOR_R 0.4f
+#define BACKGROUND_COLOR_G 0.4f
+#define BACKGROUND_COLOR_B 0.5f
+#define BACKGROUND_COLOR_A 1.0f
+
+#define KEY_EXIT GLFW_KEY_ESCAPE
+#define KEY_RECREATE_MODEL GLFW_KEY_R
+
+#define TORSO_COLOR {0.8f, 0.4f, 0.2f}
+#define HEAD_COLOR {0.8f, 0.8f, 0.2f}
+#define LEFT_ARM_COLOR {0.2f, 0.5f, 0.2f}
+#define RIGHT_ARM_COLOR {0.2f, 0.5f, 0.2f}
+#define LEFT_FOREARM_COLOR {0.2f, 0.7f, 0.2f}
+#define RIGHT_FOREARM_COLOR {0.2f, 0.7f, 0.2f}
+#define LEFT_THIGH_COLOR {0.3f, 0.4f, 0.6f}
+#define RIGHT_THIGH_COLOR {0.3f, 0.4f, 0.6f}
+#define LEFT_CALF_COLOR {0.1f, 0.3f, 0.5f}
+#define RIGHT_CALF_COLOR {0.1f, 0.3f, 0.5f}
+
+#endif

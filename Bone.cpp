@@ -1,4 +1,5 @@
 #include "humanGL.hpp"
+#include "imgui.h"
 
 Bone::Bone(string name, Bone *parent, vec dims, vec jointPos, mat jointRot)
 	: name(name), parent(parent), children({}), color(vec(3, 1)), dims(dims), jointPos(jointPos), jointRot(jointRot), transform(mat(4))
@@ -107,6 +108,14 @@ std::vector<Bone *> Bone::getChildren()
 	return children;
 }
 
+void Bone::renderModel(GLuint shaderProgram)
+{
+	render(shaderProgram);
+
+	for (Bone *child : children)
+		child->renderModel(shaderProgram);
+}
+
 void Bone::render(GLuint shaderProgram)
 {
 	vec buff_model(transform.begin(), transform.end());
@@ -115,14 +124,6 @@ void Bone::render(GLuint shaderProgram)
 	glBindVertexArray(VAO);
 	glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
 	glBindVertexArray(0);
-}
-
-void Bone::renderModel(GLuint shaderProgram)
-{
-	render(shaderProgram);
-
-	for (Bone *child : children)
-		child->renderModel(shaderProgram);
 }
 
 void Bone::clear()
@@ -163,9 +164,6 @@ void Bone::resetTransforms(mat parentTransform)
 {
 	mat localTransform;
 
-	if (this == nullptr)
-		return;
-
 	if (parent != nullptr)
 		localTransform = scale(dims) * jointRot * scale(vec({1 / parent->dims[0], 1 / parent->dims[1], 1 / parent->dims[2]})) * translate(jointPos);
 	else
@@ -181,34 +179,34 @@ void Bone::resetTransforms(mat parentTransform)
 Bone *createHumanModel()
 {
 	Bone *torso = new Bone("torso", nullptr, vec({1, 2, 0.5}), vec({0, 0, 0}), mat(4));
-	torso->setColor(vec({0.8, 0.4, 0.2}));
+	torso->setColor(TORSO_COLOR);
 
 	Bone *head = new Bone("head", torso, vec({0.5, 0.5, 0.5}), vec({0, 1, 0}), mat(4));
-	head->setColor(vec({0.8, 0.8, 0.2}));
+	head->setColor(HEAD_COLOR);
 
 	Bone *leftBicep = new Bone("leftBicep", torso, vec({0.3, 2.2, 0.3}), vec({0.5, 0.8, 0}), rotate(M_PI_2, vec({0, 0, 1})));
-	leftBicep->setColor(vec({0.2, 0.5, 0.2}));
+	leftBicep->setColor(LEFT_ARM_COLOR);
 
 	Bone *rightBicep = new Bone("rightBicep", torso, vec({0.3, 2.2, 0.3}), vec({-0.5, 0.8, 0}), rotate(-M_PI_2, vec({0, 0, 1})));
-	rightBicep->setColor(vec({0.2, 0.5, 0.2}));
+	rightBicep->setColor(RIGHT_ARM_COLOR);
 
 	Bone *leftForeArm = new Bone("leftForeArm", leftBicep, vec({0.3, 0.3, 0.3}), vec({0, 1, 0}), mat(4));
-	leftForeArm->setColor(vec({0.2, 0.7, 0.2}));
+	leftForeArm->setColor(LEFT_FOREARM_COLOR);
 
 	Bone *rightForeArm = new Bone("rightForeArm", rightBicep, vec({0.3, 0.3, 0.3}), vec({0, 1, 0}), mat(4));
-	rightForeArm->setColor(vec({0.2, 0.7, 0.2}));
+	rightForeArm->setColor(RIGHT_FOREARM_COLOR);
 
 	Bone *leftThigh = new Bone("leftThigh", torso, vec({0.3, 2.5, 0.3}), vec({-0.4, 0, 0}), rotate(M_PI, vec({1, 0, 0})));
-	leftThigh->setColor(vec({0.3, 0.4, 0.6}));
+	leftThigh->setColor(LEFT_THIGH_COLOR);
 
 	Bone *rightThigh = new Bone("rightThigh", torso, vec({0.3, 2.5, 0.3}), vec({0.4, 0, 0}), rotate(M_PI, vec({1, 0, 0})));
-	rightThigh->setColor(vec({0.3, 0.4, 0.6}));
+	rightThigh->setColor(RIGHT_THIGH_COLOR);
 
 	Bone *leftCalf = new Bone("leftCalf", leftThigh, vec({0.4, 0.3, 0.8}), vec({0, 1, 0}), mat(4));
-	leftCalf->setColor(vec({0.1, 0.3, 0.5}));
+	leftCalf->setColor(LEFT_CALF_COLOR);
 
 	Bone *rightCalf = new Bone("rightCalf", rightThigh, vec({0.4, 0.3, 0.8}), vec({0, 1, 0}), mat(4));
-	rightCalf->setColor(vec({0.1, 0.3, 0.5}));
+	rightCalf->setColor(RIGHT_CALF_COLOR);
 
 	torso->addChild(leftBicep);
 	torso->addChild(rightBicep);
@@ -222,4 +220,39 @@ Bone *createHumanModel()
 	rightThigh->addChild(rightCalf);
 
 	return torso;
+}
+
+void boneEditor(Bone *bone)
+{
+	ImGui::Begin("Bone Editor");
+
+	if (ImGui::TreeNode(bone, "%s", bone->name.c_str()))
+	{
+		vec color = bone->getColor();
+		vec dims = bone->getDims();
+		vec jointRot = bone->getJointRot();
+
+		if (bone->name == "torso")
+		{
+			vec jointPos = bone->getJointPos();
+			if (ImGui::SliderFloat3("Position", &jointPos[0], -3.0f, 3.0f))
+				bone->setJointPos(jointPos);
+		}
+
+		if (ImGui::ColorEdit3("Color", &color[0], ImGuiColorEditFlags_NoOptions))
+			bone->setColor(color);
+
+		if (ImGui::SliderFloat3("Dimensions", &dims[0], 0.0f, 3.0f))
+			bone->setDims(dims);
+
+		if (ImGui::SliderFloat3("Rotation", &jointRot[0], -M_PI, M_PI))
+			bone->setJointRot(jointRot);
+
+		for (Bone *child : bone->getChildren())
+			boneEditor(child);
+
+		ImGui::TreePop();
+	}
+
+	ImGui::End();
 }

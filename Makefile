@@ -1,10 +1,10 @@
 CC = g++
-CFLAGS = -g -std=c++17
+CFLAGS = -g -std=c++17 -Wall -Wextra
 
 TARGET = humanGL
 
 INCLUDE = ./include
-INCLUDES = humanGL Camera GL_Prog include/utils include/iterators include/ft_mat include/ft_vec
+INCLUDES = humanGL Camera GL_Prog settings include/utils include/iterators include/ft_mat include/ft_vec
 INCLUDES_EXT = .hpp
 INCLUDES := $(addsuffix $(INCLUDES_EXT), $(INCLUDES))
 

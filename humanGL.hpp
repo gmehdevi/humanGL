@@ -2,14 +2,15 @@
 #define HUMANGL_HPP
 #include <vector>
 #include <GL/glew.h>
-#include "ft_vec.hpp"
-#include "ft_mat.hpp"
 #include <chrono>
 #include <fstream>
 #include <string>
 #include <sstream>
 #include <map>
 #include <filesystem>
+#include "ft_vec.hpp"
+#include "ft_mat.hpp"
+#include "settings.hpp"
 
 typedef ft::vector<float> vec;
 typedef ft::matrix<float> mat;
@@ -77,6 +78,7 @@ public:
 };
 
 Bone *createHumanModel();
+void boneEditor(Bone *bone);
 
 void animationEditor(Bone *root);
 std::map<string, animation> loadAnimationsFromDir(string dir_path);

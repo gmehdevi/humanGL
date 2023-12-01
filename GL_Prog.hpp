@@ -1,8 +1,6 @@
 #include <iostream>
-#include <vector>
 #include <fstream>
 #include <sstream>
-
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 
@@ -107,7 +105,7 @@ private:
     int screenWidth;
     int screenHeight;
 
-    static void error_callback(int error, const char *description)
+    static void error_callback([[maybe_unused]] int error, const char *description)
     {
         std::cerr << "Error: " << description << std::endl;
     }

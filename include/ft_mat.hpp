@@ -6,7 +6,6 @@
 #include <stdexcept>
 #include "iterators.hpp"
 #include <iomanip>
-#include <sstream>
 #include <cmath>
 
 namespace ft

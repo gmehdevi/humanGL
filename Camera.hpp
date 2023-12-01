@@ -135,7 +135,7 @@ public:
         center += translation;
     }
 
-    void update(GLFWwindow *window)
+    void update([[maybe_unused]] GLFWwindow *window)
     {
         // rotateCamera(window);
         rotateCameraArrows();

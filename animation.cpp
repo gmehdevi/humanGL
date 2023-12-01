@@ -220,8 +220,18 @@ void runAnimation(Bone *root, animation &a, std::chrono::_V2::system_clock::time
 	t = (t - before->first) / (after->first - before->first);
 
 	std::vector<mat> transforms;
-	for (int i = 0; i < before->second.size(); i++)
-		transforms.push_back(linear_interpolation(before->second[i], after->second[i], t));
+
+	for (size_t i = 0; i < before->second.size(); i++)
+	{
+		mat transform;
+
+		if (std::isinf(t))
+			transform = before->second[i];
+		else
+			transform = linear_interpolation(before->second[i], after->second[i], t);
+
+		transforms.push_back(transform);
+	}
 
 	root->setTransforms(transforms);
 }
