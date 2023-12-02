@@ -11,22 +11,22 @@
 #include "ft_vec.hpp"
 #include "ft_mat.hpp"
 #include "settings.hpp"
+#include "Animation.hpp"
 
 typedef ft::vector<float> vec;
 typedef ft::matrix<float> mat;
-typedef std::map<float, std::vector<mat>> animation;
+typedef std::map<float, std::vector<Animation>> Animations;
 
 using std::string;
 using namespace std::chrono::_V2;
 
-extern std::map<string, animation> animations;
-extern animation *current_animation;
+extern std::map<string, Animations> name_to_animations;
+extern Animations *current_animation;
 extern system_clock::time_point start_time;
 extern system_clock::time_point end_time;
 
 class Bone
 {
-
 public:
     string name;
 
@@ -34,20 +34,22 @@ protected:
     Bone *parent;
     std::vector<Bone *> children;
 
-    vec color;
-    vec dims;
-
     vec jointPos;
     mat jointRot;
-
-public:
+    vec dims;
+    vec color;
     mat transform;
+
+    vec default_jointPos;
+    mat default_jointRot;
+    vec default_dims;
+    vec default_color;
 
 private:
     uint VAO, VBO, EBO;
 
 public:
-    Bone(string name, Bone *parent, vec dims, vec jointPos, mat jointRot);
+    Bone(string name, Bone *parent, vec dims, vec jointPos, mat jointRot, vec color);
 
     ~Bone();
 
@@ -59,6 +61,7 @@ public:
 
     vec getJointRot();
     void setJointRot(vec euler);
+    void setJointRot(mat rot);
 
     vec getJointPos();
     void setJointPos(vec jointPos);
@@ -73,18 +76,28 @@ public:
     void clear();
 
     std::vector<mat> getTransforms();
+    std::vector<Animation> getAnimations();
+    void applyAnimations(std::vector<Animation> animations);
     void setTransforms(std::vector<mat> transforms);
-    void resetTransforms(mat parentTransform);
+    void resetTransforms();
+    void applyTransforms(mat parentTransform);
 };
 
 Bone *createHumanModel();
 void boneEditor(Bone *bone);
 
 void animationEditor(Bone *root);
-std::map<string, animation> loadAnimationsFromDir(string dir_path);
-animation loadAnimation(const string name);
-void saveAnimation(const string name, const animation &a);
+void animationSelectionEditor(string &current_animation_name, float &time);
+void currentAnimationEditor(Bone *root, string &current_animation_name, float &time);
+void saveAnimations(const string name, const Animations &a);
+void animationCreationEditor(string &current_animation_name, float &time);
+void animationLoadEditor();
+void animationPlayEditor();
+void setTimeToLastKeyframe(float &time, const string &current_animation_name);
+std::map<string, Animations> loadAnimationsFromDir(string dir_path);
+Animations loadAnimations(const string name);
+std::vector<Animation> parseAnimations(std::vector<string> string_animations);
 std::vector<string> split_set(string s, string delimiter);
-void runAnimation(Bone *root, animation &a, system_clock::time_point start);
+void runAnimations(Bone *root, Animations &a, system_clock::time_point start);
 
 #endif

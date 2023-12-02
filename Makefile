@@ -4,12 +4,12 @@ CFLAGS = -g -std=c++17 -Wall -Wextra
 TARGET = humanGL
 
 INCLUDE = ./include
-INCLUDES = humanGL Camera GL_Prog settings include/utils include/iterators include/ft_mat include/ft_vec
+INCLUDES = humanGL Camera GL_Prog settings Animation include/utils include/iterators include/ft_mat include/ft_vec
 INCLUDES_EXT = .hpp
 INCLUDES := $(addsuffix $(INCLUDES_EXT), $(INCLUDES))
 
 IMGUI_SRC = ./include/imgui.cpp ./include/imgui_draw.cpp ./include/imgui_impl_glfw.cpp ./include/imgui_impl_opengl3.cpp ./include/imgui_widgets.cpp ./include/imgui_tables.cpp
-SRCS = main.cpp animation.cpp Bone.cpp $(IMGUI_SRC)
+SRCS = main.cpp animations.cpp Animation.cpp Bone.cpp $(IMGUI_SRC)
 OBJS = $(SRCS:.cpp=.o)
 
 LIBS = -lglfw -lGLEW -lGL -ldl

@@ -140,7 +140,8 @@ public:
         // rotateCamera(window);
         rotateCameraArrows();
         translateCamera();
-        if (keys[GLFW_KEY_R])
+
+        if (keys[KEY_RESET_CAMERA])
             reset();
     }
 

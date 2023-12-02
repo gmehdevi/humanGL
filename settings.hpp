@@ -19,6 +19,7 @@
 
 #define KEY_EXIT GLFW_KEY_ESCAPE
 #define KEY_RECREATE_MODEL GLFW_KEY_R
+#define KEY_RESET_CAMERA GLFW_KEY_R
 
 #define TORSO_COLOR {0.8f, 0.4f, 0.2f}
 #define HEAD_COLOR {0.8f, 0.8f, 0.2f}

@@ -10,8 +10,8 @@ using namespace std::chrono::_V2;
 bool keys[GLFW_KEY_LAST] = {false};
 vec background_color = {BACKGROUND_COLOR_R, BACKGROUND_COLOR_G, BACKGROUND_COLOR_B, BACKGROUND_COLOR_A};
 Bone *root;
-std::map<string, animation> animations;
-animation *current_animation;
+std::map<string, Animations> name_to_animations;
+Animations *current_animation;
 system_clock::time_point start_time = std::chrono::high_resolution_clock::time_point();
 system_clock::time_point end_time = start_time;
 
@@ -23,7 +23,10 @@ static void key_callback(GLFWwindow *window, int key, [[maybe_unused]] int scanc
         glfwSetWindowShouldClose(window, GLFW_TRUE);
 
     if (keys[KEY_RECREATE_MODEL])
+    {
+        root->clear();
         root = createHumanModel();
+    }
 }
 
 static void mouse_callback([[maybe_unused]] GLFWwindow *window, [[maybe_unused]] double xpos, [[maybe_unused]] double ypos) {}
@@ -36,7 +39,7 @@ int main()
     auto window = prog.getWindow();
     auto shaderProgram = prog.getShaderProgram();
 
-    animations = loadAnimationsFromDir(DEFAULT_ANIMATIONS_DIRECTORY);
+    name_to_animations = loadAnimationsFromDir(DEFAULT_ANIMATIONS_DIRECTORY);
 
     root = createHumanModel();
 
@@ -73,9 +76,9 @@ int main()
             current_animation = nullptr;
 
         if (current_animation == nullptr)
-            root->resetTransforms(mat(4));
+            root->applyTransforms(mat(4));
         else
-            runAnimation(root, *current_animation, start_time);
+            runAnimations(root, *current_animation, start_time);
 
         root->renderModel(shaderProgram);
 

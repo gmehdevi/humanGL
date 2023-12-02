@@ -1,9 +1,14 @@
 #include "humanGL.hpp"
 #include "imgui.h"
 
-Bone::Bone(string name, Bone *parent, vec dims, vec jointPos, mat jointRot)
-	: name(name), parent(parent), children({}), color(vec(3, 1)), dims(dims), jointPos(jointPos), jointRot(jointRot), transform(mat(4))
+Bone::Bone(string name, Bone *parent, vec dims, vec jointPos, mat jointRot, vec color)
+	: name(name), parent(parent), children({}), jointPos(jointPos), jointRot(jointRot), dims(dims), color(color), transform(mat(4))
 {
+	default_jointPos = jointPos;
+	default_jointRot = jointRot;
+	default_dims = dims;
+	default_color = color;
+
 	float vertices[] = {
 		-0.5f, -0.5f, -0.5f,
 		0.5f, -0.5f, -0.5f,
@@ -88,6 +93,11 @@ void Bone::setJointRot(vec euler)
 	this->jointRot = rot;
 }
 
+void Bone::setJointRot(mat rot)
+{
+	this->jointRot = rot;
+}
+
 vec Bone::getJointPos()
 {
 	return jointPos;
@@ -147,6 +157,41 @@ std::vector<mat> Bone::getTransforms()
 	return transforms;
 }
 
+std::vector<Animation> Bone::getAnimations()
+{
+	std::vector<Animation> animations;
+	animations.push_back(Animation(jointPos, rotationToEuler(jointRot), dims, color));
+
+	for (Bone *child : children)
+	{
+		std::vector<Animation> childAnimations = child->getAnimations();
+		animations.insert(animations.end(), childAnimations.begin(), childAnimations.end());
+	}
+
+	return animations;
+}
+
+void Bone::applyAnimations(std::vector<Animation> animations)
+{
+	setJointPos(animations[0].getTranslation());
+	setJointRot(animations[0].getRotation());
+	setDims(animations[0].getScale());
+	setColor(animations[0].getColor());
+	animations.erase(animations.begin());
+
+	if (parent != nullptr)
+		applyTransforms(parent->transform);
+	else
+		applyTransforms(mat(4));
+
+	for (Bone *child : children)
+	{
+		std::vector<Animation> childAnimations(animations.begin(), animations.begin() + child->getAnimations().size());
+		child->applyAnimations(childAnimations);
+		animations.erase(animations.begin(), animations.begin() + child->getAnimations().size());
+	}
+}
+
 void Bone::setTransforms(std::vector<mat> transforms)
 {
 	transform = transforms[0];
@@ -160,7 +205,19 @@ void Bone::setTransforms(std::vector<mat> transforms)
 	}
 }
 
-void Bone::resetTransforms(mat parentTransform)
+void Bone::resetTransforms()
+{
+	setJointPos(default_jointPos);
+	setJointRot(default_jointRot);
+	setDims(default_dims);
+	setColor(default_color);
+	applyTransforms(parent == nullptr ? mat(4) : parent->transform);
+
+	for (Bone *child : children)
+		child->resetTransforms();
+}
+
+void Bone::applyTransforms(mat parentTransform)
 {
 	mat localTransform;
 
@@ -173,40 +230,21 @@ void Bone::resetTransforms(mat parentTransform)
 
 	for (Bone *child : children)
 		if (child != nullptr)
-			child->resetTransforms(transform);
+			child->applyTransforms(transform);
 }
 
 Bone *createHumanModel()
 {
-	Bone *torso = new Bone("torso", nullptr, vec({1, 2, 0.5}), vec({0, 0, 0}), mat(4));
-	torso->setColor(TORSO_COLOR);
-
-	Bone *head = new Bone("head", torso, vec({0.5, 0.5, 0.5}), vec({0, 1, 0}), mat(4));
-	head->setColor(HEAD_COLOR);
-
-	Bone *leftBicep = new Bone("leftBicep", torso, vec({0.3, 2.2, 0.3}), vec({0.5, 0.8, 0}), rotate(M_PI_2, vec({0, 0, 1})));
-	leftBicep->setColor(LEFT_ARM_COLOR);
-
-	Bone *rightBicep = new Bone("rightBicep", torso, vec({0.3, 2.2, 0.3}), vec({-0.5, 0.8, 0}), rotate(-M_PI_2, vec({0, 0, 1})));
-	rightBicep->setColor(RIGHT_ARM_COLOR);
-
-	Bone *leftForeArm = new Bone("leftForeArm", leftBicep, vec({0.3, 0.3, 0.3}), vec({0, 1, 0}), mat(4));
-	leftForeArm->setColor(LEFT_FOREARM_COLOR);
-
-	Bone *rightForeArm = new Bone("rightForeArm", rightBicep, vec({0.3, 0.3, 0.3}), vec({0, 1, 0}), mat(4));
-	rightForeArm->setColor(RIGHT_FOREARM_COLOR);
-
-	Bone *leftThigh = new Bone("leftThigh", torso, vec({0.3, 2.5, 0.3}), vec({-0.4, 0, 0}), rotate(M_PI, vec({1, 0, 0})));
-	leftThigh->setColor(LEFT_THIGH_COLOR);
-
-	Bone *rightThigh = new Bone("rightThigh", torso, vec({0.3, 2.5, 0.3}), vec({0.4, 0, 0}), rotate(M_PI, vec({1, 0, 0})));
-	rightThigh->setColor(RIGHT_THIGH_COLOR);
-
-	Bone *leftCalf = new Bone("leftCalf", leftThigh, vec({0.4, 0.3, 0.8}), vec({0, 1, 0}), mat(4));
-	leftCalf->setColor(LEFT_CALF_COLOR);
-
-	Bone *rightCalf = new Bone("rightCalf", rightThigh, vec({0.4, 0.3, 0.8}), vec({0, 1, 0}), mat(4));
-	rightCalf->setColor(RIGHT_CALF_COLOR);
+	Bone *torso = new Bone("torso", nullptr, vec({1, 2, 0.5}), vec({0, 0, 0}), mat(4), TORSO_COLOR);
+	Bone *head = new Bone("head", torso, vec({0.5, 0.5, 0.5}), vec({0, 1, 0}), mat(4), HEAD_COLOR);
+	Bone *leftBicep = new Bone("leftBicep", torso, vec({0.3, 2.2, 0.3}), vec({0.5, 0.8, 0}), rotate(M_PI_2, vec({0, 0, 1})), LEFT_ARM_COLOR);
+	Bone *rightBicep = new Bone("rightBicep", torso, vec({0.3, 2.2, 0.3}), vec({-0.5, 0.8, 0}), rotate(-M_PI_2, vec({0, 0, 1})), RIGHT_ARM_COLOR);
+	Bone *leftForeArm = new Bone("leftForeArm", leftBicep, vec({0.3, 0.3, 0.3}), vec({0, 1, 0}), mat(4), LEFT_FOREARM_COLOR);
+	Bone *rightForeArm = new Bone("rightForeArm", rightBicep, vec({0.3, 0.3, 0.3}), vec({0, 1, 0}), mat(4), RIGHT_FOREARM_COLOR);
+	Bone *leftThigh = new Bone("leftThigh", torso, vec({0.3, 2.5, 0.3}), vec({-0.4, 0, 0}), rotate(M_PI, vec({1, 0, 0})), LEFT_THIGH_COLOR);
+	Bone *rightThigh = new Bone("rightThigh", torso, vec({0.3, 2.5, 0.3}), vec({0.4, 0, 0}), rotate(M_PI, vec({1, 0, 0})), RIGHT_THIGH_COLOR);
+	Bone *leftCalf = new Bone("leftCalf", leftThigh, vec({0.4, 0.3, 0.8}), vec({0, 1, 0}), mat(4), LEFT_CALF_COLOR);
+	Bone *rightCalf = new Bone("rightCalf", rightThigh, vec({0.4, 0.3, 0.8}), vec({0, 1, 0}), mat(4), RIGHT_CALF_COLOR);
 
 	torso->addChild(leftBicep);
 	torso->addChild(rightBicep);

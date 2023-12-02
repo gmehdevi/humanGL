@@ -528,15 +528,34 @@ namespace ft
 
     template< class T, class Alloc >
 	std::ostream &operator<<(std::ostream &out, const vector<T,Alloc> &v) {
-		std::cout << "[";
+		out << '[';
 		for (size_t i = 0; i < v.size() - 1; i++)
 			out << v[i] << ", ";
 		if (v.size())
 			out << v[v.size() - 1];
-		std::cout << "]";
+		out << ']';
 		return out;
 	}
 
+	template<class T, class Alloc>
+	std::istream &operator>>(std::istream &in, vector<T,Alloc> &v) {
+		char c;
+
+		in >> c;
+
+		if (c != '[')
+			throw std::invalid_argument("vector >>: invalid start character: " + std::string(1, c));
+
+		for (size_t i = 0; i < v.size(); i++) {
+			in >> v[i];
+			in >> c;
+
+			if (c != ',' && c != ']')
+				throw std::invalid_argument("vector >>: invalid separator: " + std::string(1, c));
+		}
+
+		return in;
+	}
 
 	template<class T>
 	ft::vector<T> linear_combination(ft::vector<ft::vector<T>> v, ft::vector<T> a)  {
