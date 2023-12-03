@@ -223,3 +223,51 @@ Bone *createHumanModel()
 
 	return torso;
 }
+
+void boneEditor(Bone *bone)
+{
+    ImGui::Begin("Bone Editor");
+
+    if (ImGui::TreeNode(bone, "%s", bone->name.c_str()))
+    {
+
+        vec color = bone->getColor();
+        vec dims = bone->getDims();
+        vec jointRot = bone->getJointRot();
+		static float increment = 0.1f;
+		
+        if (bone->name == "torso")
+        {
+            vec jointPos = bone->getJointPos();
+            if (ImGui::SliderFloat3("Position", &jointPos[0], -3.0f, 3.0f))
+                bone->setJointPos(jointPos);
+        }
+
+        if (ImGui::ColorEdit3("Color", &color[0], ImGuiColorEditFlags_NoOptions))
+            bone->setColor(color);
+
+        if (ImGui::SliderFloat3("Dimensions", &dims[0], 0.0f, 3.0f))
+            bone->setDims(dims);
+
+		if (ImGui::InputFloat("", &increment, 0.1f, 5.0f, "%.1f"))
+			increment = increment;
+
+		for (int i = 0; i < 3; i++) {
+			if (ImGui::Button(std::string("+ ").append(1, 'X' + i).c_str()))
+				jointRot[i] += increment;
+			ImGui::SameLine();
+			if (ImGui::Button(std::string("- ").append(1, 'X' + i).c_str()))
+				jointRot[i] -= increment;
+			bone->setJointRot(jointRot);
+			if (i < 2)
+				ImGui::SameLine();
+		}
+
+        for (Bone *child : bone->getChildren())
+            boneEditor(child);
+
+        ImGui::TreePop();
+    }
+
+    ImGui::End();
+}

@@ -10,6 +10,7 @@
 #include <sstream>
 #include <map>
 #include <filesystem>
+#include "imgui.h"
 
 typedef ft::vector<float> vec;
 typedef ft::matrix<float> mat;
@@ -84,5 +85,6 @@ animation loadAnimation(const string name);
 void saveAnimation(const string name, const animation &a);
 std::vector<string> split_set(string s, string delimiter);
 void runAnimation(Bone *root, animation &a, system_clock::time_point start);
+void boneEditor(Bone *bone);
 
 #endif

@@ -225,3 +225,24 @@ void runAnimation(Bone *root, animation &a, std::chrono::_V2::system_clock::time
 
 	root->setTransforms(transforms);
 }
+
+bool is_valid_animation_name(animation &a)
+{
+	if (a.size() < 2){
+		return false;
+	} else if (a.begin()->first != 0.0f) {
+		return false;
+	} else {
+		int num_transforms = a.begin()->second.size();
+		num_transforms = 1;
+		for (auto &keyframe : a)
+		{
+			for (auto &transform : keyframe.second)
+				if (transform.rows() != 4 || transform.cols() != 4)
+					return false;
+			if (keyframe.second.size() != num_transforms)
+				return false;
+		}
+	}
+	return true;
+}

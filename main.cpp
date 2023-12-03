@@ -35,42 +35,6 @@ static void mouse_callback(GLFWwindow *window, double xpos, double ypos)
 {
 }
 
-void boneEditor(Bone *bone)
-{
-    ImGui::Begin("Bone Editor");
-
-    if (ImGui::TreeNode(bone, "%s", bone->name.c_str()))
-    {
-
-        vec color = bone->getColor();
-        vec dims = bone->getDims();
-        vec jointRot = bone->getJointRot();
-
-        if (bone->name == "torso")
-        {
-            vec jointPos = bone->getJointPos();
-            if (ImGui::SliderFloat3("Position", &jointPos[0], -3.0f, 3.0f))
-                bone->setJointPos(jointPos);
-        }
-
-        if (ImGui::ColorEdit3("Color", &color[0], ImGuiColorEditFlags_NoOptions))
-            bone->setColor(color);
-
-        if (ImGui::SliderFloat3("Dimensions", &dims[0], 0.0f, 3.0f))
-            bone->setDims(dims);
-
-        if (ImGui::SliderFloat3("Rotation", &jointRot[0], -M_PI, M_PI))
-            bone->setJointRot(jointRot);
-
-        for (Bone *child : bone->getChildren())
-            boneEditor(child);
-
-        ImGui::TreePop();
-    }
-
-    ImGui::End();
-}
-
 int main()
 {
     Camera cam({0.0f, 0.0f, 10.0f}, {0.0f, 0.0f, 0.0f}, {0.0f, 1.0f, 0.0f}, 0.01f, 0.1f, keys);
