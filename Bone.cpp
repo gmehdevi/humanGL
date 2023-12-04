@@ -1,7 +1,7 @@
 #include "humanGL.hpp"
 #include "imgui.h"
 
-Bone::Bone(string name, Bone *parent, vec dims, vec jointPos, mat jointRot, vec color)
+Bone::Bone(string name, Bone *parent, vec dims, vec jointPos, vec jointRot, vec color)
 	: name(name), parent(parent), children({}), jointPos(jointPos), jointRot(jointRot), dims(dims), color(color), transform(mat(4))
 {
 	default_jointPos = jointPos;
@@ -84,18 +84,18 @@ void Bone::setDims(vec dims)
 
 vec Bone::getJointRot()
 {
-	return rotationToEuler(jointRot);
+	return jointRot;
 }
 
 void Bone::setJointRot(vec euler)
 {
-	mat rot = eulerToRotation(euler, 4);
-	this->jointRot = rot;
+	this->jointRot = euler;
 }
 
 void Bone::setJointRot(mat rot)
 {
-	this->jointRot = rot;
+	vec euler = rotationToEuler(rot);
+	this->jointRot = euler;
 }
 
 vec Bone::getJointPos()
@@ -160,7 +160,7 @@ std::vector<mat> Bone::getTransforms()
 std::vector<Animation> Bone::getAnimations()
 {
 	std::vector<Animation> animations;
-	animations.push_back(Animation(jointPos, rotationToEuler(jointRot), dims, color));
+	animations.push_back(Animation(jointPos, jointRot, dims, color));
 
 	for (Bone *child : children)
 	{
@@ -222,9 +222,9 @@ void Bone::applyTransforms(mat parentTransform)
 	mat localTransform;
 
 	if (parent != nullptr)
-		localTransform = scale(dims) * jointRot * scale(vec({1 / parent->dims[0], 1 / parent->dims[1], 1 / parent->dims[2]})) * translate(jointPos);
+		localTransform = scale(dims) * eulerToRotation(jointRot, 4) * scale(vec({1 / parent->dims[0], 1 / parent->dims[1], 1 / parent->dims[2]})) * translate(jointPos);
 	else
-		localTransform = scale(dims) * jointRot * translate(jointPos);
+		localTransform = scale(dims) * eulerToRotation(jointRot, 4) * translate(jointPos);
 
 	transform = localTransform * parentTransform;
 
@@ -235,16 +235,16 @@ void Bone::applyTransforms(mat parentTransform)
 
 Bone *createHumanModel()
 {
-	Bone *torso = new Bone("torso", nullptr, vec({1, 2, 0.5}), vec({0, 0, 0}), mat(4), TORSO_COLOR);
-	Bone *head = new Bone("head", torso, vec({0.5, 0.5, 0.5}), vec({0, 1, 0}), mat(4), HEAD_COLOR);
-	Bone *leftBicep = new Bone("leftBicep", torso, vec({0.3, 2.2, 0.3}), vec({0.5, 0.8, 0}), rotate(M_PI_2, vec({0, 0, 1})), LEFT_ARM_COLOR);
-	Bone *rightBicep = new Bone("rightBicep", torso, vec({0.3, 2.2, 0.3}), vec({-0.5, 0.8, 0}), rotate(-M_PI_2, vec({0, 0, 1})), RIGHT_ARM_COLOR);
-	Bone *leftForeArm = new Bone("leftForeArm", leftBicep, vec({0.3, 0.3, 0.3}), vec({0, 1, 0}), mat(4), LEFT_FOREARM_COLOR);
-	Bone *rightForeArm = new Bone("rightForeArm", rightBicep, vec({0.3, 0.3, 0.3}), vec({0, 1, 0}), mat(4), RIGHT_FOREARM_COLOR);
-	Bone *leftThigh = new Bone("leftThigh", torso, vec({0.3, 2.5, 0.3}), vec({-0.4, 0, 0}), rotate(M_PI, vec({1, 0, 0})), LEFT_THIGH_COLOR);
-	Bone *rightThigh = new Bone("rightThigh", torso, vec({0.3, 2.5, 0.3}), vec({0.4, 0, 0}), rotate(M_PI, vec({1, 0, 0})), RIGHT_THIGH_COLOR);
-	Bone *leftCalf = new Bone("leftCalf", leftThigh, vec({0.4, 0.3, 0.8}), vec({0, 1, 0}), mat(4), LEFT_CALF_COLOR);
-	Bone *rightCalf = new Bone("rightCalf", rightThigh, vec({0.4, 0.3, 0.8}), vec({0, 1, 0}), mat(4), RIGHT_CALF_COLOR);
+	Bone *torso = new Bone("torso", nullptr, vec({1, 2, 0.5}), vec({0, 0, 0}), vec(3), TORSO_COLOR);
+	Bone *head = new Bone("head", torso, vec({0.5, 0.5, 0.5}), vec({0, 1, 0}), vec(3), HEAD_COLOR);
+	Bone *leftBicep = new Bone("leftBicep", torso, vec({0.3, 2.2, 0.3}), vec({0.5, 0.8, 0}), rotationToEuler(rotate(M_PI_2, vec({0, 0, 1}))), LEFT_ARM_COLOR);
+	Bone *rightBicep = new Bone("rightBicep", torso, vec({0.3, 2.2, 0.3}), vec({-0.5, 0.8, 0}), rotationToEuler(rotate(-M_PI_2, vec({0, 0, 1}))), RIGHT_ARM_COLOR);
+	Bone *leftForeArm = new Bone("leftForeArm", leftBicep, vec({0.3, 0.3, 0.3}), vec({0, 1, 0}), vec(3), LEFT_FOREARM_COLOR);
+	Bone *rightForeArm = new Bone("rightForeArm", rightBicep, vec({0.3, 0.3, 0.3}), vec({0, 1, 0}), vec(3), RIGHT_FOREARM_COLOR);
+	Bone *leftThigh = new Bone("leftThigh", torso, vec({0.3, 2.5, 0.3}), vec({-0.4, 0, 0}), rotationToEuler(rotate(M_PI, vec({1, 0, 0}))), LEFT_THIGH_COLOR);
+	Bone *rightThigh = new Bone("rightThigh", torso, vec({0.3, 2.5, 0.3}), vec({0.4, 0, 0}), rotationToEuler(rotate(M_PI, vec({1, 0, 0}))), RIGHT_THIGH_COLOR);
+	Bone *leftCalf = new Bone("leftCalf", leftThigh, vec({0.4, 0.3, 0.8}), vec({0, 1, 0}), vec(3), LEFT_CALF_COLOR);
+	Bone *rightCalf = new Bone("rightCalf", rightThigh, vec({0.4, 0.3, 0.8}), vec({0, 1, 0}), vec(3), RIGHT_CALF_COLOR);
 
 	torso->addChild(leftBicep);
 	torso->addChild(rightBicep);
@@ -262,48 +262,55 @@ Bone *createHumanModel()
 
 void boneEditor(Bone *bone)
 {
-    ImGui::Begin("Bone Editor");
+	ImGui::Begin("Bone Editor");
 
-    if (ImGui::TreeNode(bone, "%s", bone->name.c_str()))
-    {
+	if (ImGui::TreeNode(bone, "%s", bone->name.c_str()))
+	{
 
-        vec color = bone->getColor();
-        vec dims = bone->getDims();
-        vec jointRot = bone->getJointRot();
+		vec color = bone->getColor();
+		vec dims = bone->getDims();
+		vec jointRot = bone->getJointRot();
 		static float increment = 0.1f;
-		
-        if (bone->name == "torso")
-        {
-            vec jointPos = bone->getJointPos();
-            if (ImGui::SliderFloat3("Position", &jointPos[0], -3.0f, 3.0f))
-                bone->setJointPos(jointPos);
-        }
 
-        if (ImGui::ColorEdit3("Color", &color[0], ImGuiColorEditFlags_NoOptions))
-            bone->setColor(color);
+		if (bone->name == "torso")
+		{
+			vec jointPos = bone->getJointPos();
+			if (ImGui::SliderFloat3("Position", &jointPos[0], -3.0f, 3.0f))
+				bone->setJointPos(jointPos);
+		}
 
-        if (ImGui::SliderFloat3("Dimensions", &dims[0], 0.0f, 3.0f))
-            bone->setDims(dims);
+		if (ImGui::ColorEdit3("Color", &color[0], ImGuiColorEditFlags_NoOptions))
+			bone->setColor(color);
+
+		if (ImGui::SliderFloat3("Dimensions", &dims[0], 0.0f, 3.0f))
+			bone->setDims(dims);
 
 		if (ImGui::InputFloat("", &increment, 0.1f, 5.0f, "%.1f"))
 			increment = increment;
 
-		for (int i = 0; i < 3; i++) {
+		for (int i = 0; i < 3; i++)
+		{
 			if (ImGui::Button(std::string("+ ").append(1, 'X' + i).c_str()))
+			{
 				jointRot[i] += increment;
+				std::cout << "Joint rotation: " << jointRot << std::endl;
+			}
 			ImGui::SameLine();
 			if (ImGui::Button(std::string("- ").append(1, 'X' + i).c_str()))
+			{
 				jointRot[i] -= increment;
+				std::cout << "Joint rotation: " << jointRot << std::endl;
+			}
 			bone->setJointRot(jointRot);
 			if (i < 2)
 				ImGui::SameLine();
 		}
 
-        for (Bone *child : bone->getChildren())
-            boneEditor(child);
+		for (Bone *child : bone->getChildren())
+			boneEditor(child);
 
-        ImGui::TreePop();
-    }
+		ImGui::TreePop();
+	}
 
-    ImGui::End();
+	ImGui::End();
 }

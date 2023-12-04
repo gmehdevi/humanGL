@@ -36,13 +36,13 @@ protected:
     std::vector<Bone *> children;
 
     vec jointPos;
-    mat jointRot;
+    vec jointRot;
     vec dims;
     vec color;
     mat transform;
 
     vec default_jointPos;
-    mat default_jointRot;
+    vec default_jointRot;
     vec default_dims;
     vec default_color;
 
@@ -50,7 +50,7 @@ private:
     uint VAO, VBO, EBO;
 
 public:
-    Bone(string name, Bone *parent, vec dims, vec jointPos, mat jointRot, vec color);
+    Bone(string name, Bone *parent, vec dims, vec jointPos, vec jointRot, vec color);
 
     ~Bone();
 
