@@ -255,6 +255,12 @@ Animations loadAnimations(const string name)
 
 	file.close();
 
+	if (!are_animations_valid(animation))
+	{
+		std::cerr << "Animation \"" << name << "\" is invalid" << std::endl;
+		return Animations();
+	}
+
 	std::cout << "Animation " << name << " loaded" << std::endl;
 
 	return animation;
@@ -317,4 +323,25 @@ void runAnimations(Bone *root, Animations &a, std::chrono::_V2::system_clock::ti
 	}
 
 	root->applyAnimations(animations);
+}
+
+bool are_animations_valid(Animations &a)
+{
+	if (a.size() < 2 || a.begin()->first != 0.0f)
+	{
+		return false;
+	}
+
+	auto num_animation = a.begin()->second.size();
+
+	for (auto &keyframe : a)
+	{
+		for (auto &animation : keyframe.second)
+			if (!animation.isValid())
+				return false;
+		if (keyframe.second.size() != num_animation)
+			return false;
+	}
+
+	return true;
 }

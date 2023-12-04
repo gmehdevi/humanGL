@@ -9,24 +9,29 @@ Animation::Animation(vec translation, vec rotation, vec scale, vec color)
 {
 }
 
-const vec Animation::getTranslation()
+const vec Animation::getTranslation() const
 {
 	return translation;
 }
 
-const vec Animation::getRotation()
+const vec Animation::getRotation() const
 {
 	return rotation;
 }
 
-const vec Animation::getScale()
+const vec Animation::getScale() const
 {
 	return scale;
 }
 
-const vec Animation::getColor()
+const vec Animation::getColor() const
 {
 	return color;
+}
+
+bool Animation::isValid() const
+{
+	return translation.size() == 3 && rotation.size() == 3 && scale.size() == 3 && color.size() == 3;
 }
 
 std::ostream &operator<<(std::ostream &os, const Animation &animation)

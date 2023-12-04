@@ -12,6 +12,7 @@
 #include "ft_mat.hpp"
 #include "settings.hpp"
 #include "Animation.hpp"
+#include "imgui.h"
 
 typedef ft::vector<float> vec;
 typedef ft::matrix<float> mat;
@@ -99,5 +100,6 @@ Animations loadAnimations(const string name);
 std::vector<Animation> parseAnimations(std::vector<string> string_animations);
 std::vector<string> split_set(string s, string delimiter);
 void runAnimations(Bone *root, Animations &a, system_clock::time_point start);
+bool are_animations_valid(Animations &a);
 
 #endif
