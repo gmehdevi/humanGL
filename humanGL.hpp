@@ -75,6 +75,7 @@ public:
     void addChild(Bone *child);
 
     std::vector<Bone *> getChildren();
+    size_t getChildrenCount();
 
     void render(GLuint shaderProgram);
     void renderModel(GLuint shaderProgram);
@@ -97,14 +98,14 @@ void animationSelectionEditor(string &current_animation_name, float &time);
 void currentAnimationEditor(Bone *root, string &current_animation_name, float &time);
 void saveAnimations(const string name, const Animations &a);
 void animationCreationEditor(string &current_animation_name, float &time);
-void animationLoadEditor();
+void animationLoadEditor(Bone *root);
 void animationPlayEditor();
 void setTimeToLastKeyframe(float &time, const string &current_animation_name);
-std::map<string, Animations> loadAnimationsFromDir(string dir_path);
-Animations loadAnimations(const string name);
+std::map<string, Animations> loadAnimationsFromDir(string dir_path, size_t bone_count);
+Animations loadAnimations(const string name, size_t bone_count);
 std::vector<Animation> parseAnimations(std::vector<string> string_animations);
 std::vector<string> split_set(string s, string delimiter);
 void runAnimations(Bone *root, Animations &a, system_clock::time_point start);
-bool are_animations_valid(Animations &a);
+bool are_animations_valid(Animations &a, size_t bone_count);
 
 #endif

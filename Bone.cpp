@@ -118,6 +118,16 @@ std::vector<Bone *> Bone::getChildren()
 	return children;
 }
 
+size_t Bone::getChildrenCount()
+{
+	size_t count = 0;
+
+	for (Bone *child : children)
+		count += child->getChildrenCount() + 1;
+
+	return count;
+}
+
 void Bone::renderModel(GLuint shaderProgram)
 {
 	render(shaderProgram);

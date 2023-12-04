@@ -57,9 +57,9 @@ ModelType getModelType(int argc, char **argv)
 
 int main(int argc, char **argv)
 {
-    if (argc > 2 && string(argv[1]).compare("-h"))
+    if (argc > 1 && string(argv[1]) == "-h")
     {
-        std::cerr << "Usage: " << argv[0] << " [human|alien (defualt: human)]" << std::endl;
+        std::cerr << "Usage: " << argv[0] << " [human|alien (default: human)]" << std::endl;
         return 0;
     }
 
@@ -71,9 +71,9 @@ int main(int argc, char **argv)
     auto window = prog.getWindow();
     auto shaderProgram = prog.getShaderProgram();
 
-    name_to_animations = loadAnimationsFromDir(DEFAULT_ANIMATIONS_DIRECTORY);
-
     root = createModel(model_type);
+
+    name_to_animations = loadAnimationsFromDir(DEFAULT_ANIMATIONS_DIRECTORY, root->getChildrenCount());
 
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();

@@ -16,7 +16,7 @@ void animationEditor(Bone *root)
 	ImGui::Separator();
 
 	animationCreationEditor(current_animation_name, time);
-	animationLoadEditor();
+	animationLoadEditor(root);
 
 	ImGui::Separator();
 
@@ -135,7 +135,7 @@ void animationCreationEditor(string &current_animation_name, float &time)
 	}
 }
 
-void animationLoadEditor()
+void animationLoadEditor(Bone *root)
 {
 	static char load_animation_name[100] = "";
 
@@ -145,7 +145,7 @@ void animationLoadEditor()
 	{
 		if (ImGui::Button("Load Animation"))
 		{
-			Animations animations = loadAnimations(load_animation_name);
+			Animations animations = loadAnimations(load_animation_name, root->getChildrenCount());
 
 			if (!animations.empty())
 			{
@@ -183,7 +183,7 @@ void setTimeToLastKeyframe(float &time, const string &current_animation_name)
 		time = 0.0f;
 }
 
-std::map<string, Animations> loadAnimationsFromDir(string dir_path)
+std::map<string, Animations> loadAnimationsFromDir(string dir_path, size_t children_bone_count)
 {
 	std::map<string, Animations> animations;
 	for (const auto &entry : std::filesystem::directory_iterator(dir_path))
@@ -193,7 +193,7 @@ std::map<string, Animations> loadAnimationsFromDir(string dir_path)
 
 		auto path = entry.path();
 		path = path.replace_extension("");
-		Animations a = loadAnimations(path);
+		Animations a = loadAnimations(path, children_bone_count);
 
 		if (!a.empty())
 		{
@@ -206,7 +206,7 @@ std::map<string, Animations> loadAnimationsFromDir(string dir_path)
 	return animations;
 }
 
-Animations loadAnimations(const string name)
+Animations loadAnimations(const string name, size_t children_bone_count)
 {
 	std::ifstream file(name + ".anim");
 
@@ -255,9 +255,9 @@ Animations loadAnimations(const string name)
 
 	file.close();
 
-	if (!are_animations_valid(animation))
+	if (!are_animations_valid(animation, children_bone_count))
 	{
-		std::cerr << "Animation \"" << name << "\" is invalid" << std::endl;
+		std::cerr << "Animation " << name << " is invalid" << std::endl;
 		return Animations();
 	}
 
@@ -325,7 +325,7 @@ void runAnimations(Bone *root, Animations &a, std::chrono::_V2::system_clock::ti
 	root->applyAnimations(animations);
 }
 
-bool are_animations_valid(Animations &a)
+bool are_animations_valid(Animations &a, size_t children_bone_count)
 {
 	if (a.size() < 2 || a.begin()->first != 0.0f)
 	{
@@ -333,6 +333,9 @@ bool are_animations_valid(Animations &a)
 	}
 
 	auto num_animation = a.begin()->second.size();
+
+	if (num_animation != children_bone_count + 1)
+		return false;
 
 	for (auto &keyframe : a)
 	{
