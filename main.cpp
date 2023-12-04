@@ -8,6 +8,7 @@
 using namespace std::chrono::_V2;
 
 bool keys[GLFW_KEY_LAST] = {false};
+ModelType model_type = Human;
 vec background_color = {BACKGROUND_COLOR_R, BACKGROUND_COLOR_G, BACKGROUND_COLOR_B, BACKGROUND_COLOR_A};
 Bone *root;
 std::map<string, Animations> name_to_animations;
@@ -25,14 +26,45 @@ static void key_callback(GLFWwindow *window, int key, [[maybe_unused]] int scanc
     if (keys[KEY_RECREATE_MODEL])
     {
         root->clear();
-        root = createHumanModel();
+        root = createModel(model_type);
     }
 }
 
 static void mouse_callback([[maybe_unused]] GLFWwindow *window, [[maybe_unused]] double xpos, [[maybe_unused]] double ypos) {}
 
-int main()
+ModelType getModelType(int argc, char **argv)
 {
+    if (argc < 2)
+    {
+        return Human;
+    }
+
+    if (strcmp(argv[1], "human") == 0)
+    {
+        return Human;
+    }
+    else if (strcmp(argv[1], "alien") == 0)
+    {
+        return Alien;
+    }
+    else
+    {
+        std::cerr << "Invalid model type: " << argv[1] << std::endl;
+
+        exit(-1);
+    }
+}
+
+int main(int argc, char **argv)
+{
+    if (argc > 2 && string(argv[1]).compare("-h"))
+    {
+        std::cerr << "Usage: " << argv[0] << " [human|alien (defualt: human)]" << std::endl;
+        return 0;
+    }
+
+    model_type = getModelType(argc, argv);
+
     Camera cam(CAMERA_EYE_POSITION, CAMERA_CENTER_POSITION, CAMERA_UP_VECTOR, CAMERA_ROTATE_SPEED, CAMERA_TRANSLATE_SPEED, keys);
     GL_Prog prog("shaders/vs.glsl", "shaders/fs.glsl", key_callback, mouse_callback, WINDOW_WIDTH, WINDOW_HEIGHT);
 
@@ -41,7 +73,7 @@ int main()
 
     name_to_animations = loadAnimationsFromDir(DEFAULT_ANIMATIONS_DIRECTORY);
 
-    root = createHumanModel();
+    root = createModel(model_type);
 
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();

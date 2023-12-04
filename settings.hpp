@@ -31,5 +31,7 @@
 #define RIGHT_THIGH_COLOR {0.3f, 0.4f, 0.6f}
 #define LEFT_CALF_COLOR {0.1f, 0.3f, 0.5f}
 #define RIGHT_CALF_COLOR {0.1f, 0.3f, 0.5f}
+#define LEFT_ANTENNA_COLOR {0.8f, 0.1f, 0.1f}
+#define RIGHT_ANTENNA_COLOR {0.8f, 0.1f, 0.1f}
 
 #endif

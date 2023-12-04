@@ -26,6 +26,11 @@ extern Animations *current_animation;
 extern system_clock::time_point start_time;
 extern system_clock::time_point end_time;
 
+typedef enum ModelType {
+    Human = 0,
+    Alien
+} ModelType;
+
 class Bone
 {
 public:
@@ -84,7 +89,7 @@ public:
     void applyTransforms(mat parentTransform);
 };
 
-Bone *createHumanModel();
+Bone *createModel(ModelType model_type);
 void boneEditor(Bone *bone);
 
 void animationEditor(Bone *root);

@@ -233,7 +233,7 @@ void Bone::applyTransforms(mat parentTransform)
 			child->applyTransforms(transform);
 }
 
-Bone *createHumanModel()
+Bone *createModel(ModelType model_type)
 {
 	Bone *torso = new Bone("torso", nullptr, vec({1, 2, 0.5}), vec({0, 0, 0}), vec(3), TORSO_COLOR);
 	Bone *head = new Bone("head", torso, vec({0.5, 0.5, 0.5}), vec({0, 1, 0}), vec(3), HEAD_COLOR);
@@ -251,6 +251,15 @@ Bone *createHumanModel()
 	torso->addChild(leftThigh);
 	torso->addChild(rightThigh);
 	torso->addChild(head);
+
+	if (model_type == Alien)
+	{
+		Bone *leftAntenna = new Bone("leftAntenna", head, vec({0.1, 1.5, 0.1}), vec({0.2, 0.5, 0}), vec(3), LEFT_ANTENNA_COLOR);
+		Bone *rightAntenna = new Bone("rightAntenna", head, vec({0.1, 1.5, 0.1}), vec({-0.2, 0.5, 0}), vec(3), RIGHT_ANTENNA_COLOR);
+
+		head->addChild(leftAntenna);
+		head->addChild(rightAntenna);
+	}
 
 	leftBicep->addChild(leftForeArm);
 	rightBicep->addChild(rightForeArm);
